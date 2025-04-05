@@ -6,11 +6,13 @@
     @mouseleave="() => handleLeave()"
     @mouseover="() => handleHover()"
   >
-    <component
-      @cell-delete="() => handleDelete()"
-      :style="{ position: 'absolute', pointerEvents: selectedItem == null ? 'auto' : 'none' }"
-      :is="children"
-    />
+    <div @click="() => onBuildingClick()">
+      <component
+        :style="{ position: 'absolute', pointerEvents: selectedItem == null ? 'auto' : 'none' }"
+        :is="children"
+      />
+    </div>
+
     <component :style="{ opacity: '0.5', pointerEvents: 'none' }" :is="temp" />
   </div>
 </template>
@@ -32,17 +34,18 @@ export default {
   },
   methods: {
     onCellClick() {
-      this.$emit("cell-click", { x: this.x, y: this.y });
+      this.$emit("click", { x: this.x, y: this.y });
     },
     handleHover() {
-      this.$emit("cell-hover", { x: this.x, y: this.y });
+      this.$emit("hover", { x: this.x, y: this.y });
     },
     handleLeave() {
-      this.$emit("cell-leave", { x: this.x, y: this.y });
+      this.$emit("leave", { x: this.x, y: this.y });
     },
-    handleDelete() {
+
+    onBuildingClick() {
       if (this.selectedItem == null) {
-        this.$emit("cell-delete", { x: this.x, y: this.y });
+        this.$emit("delete", { x: this.x, y: this.y });
       }
     },
   },
