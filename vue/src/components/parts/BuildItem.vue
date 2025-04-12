@@ -17,7 +17,7 @@ export default {
 };
 </script>
 
-<style scoped>
+<style scoped lang="less">
 .build-item {
   background: #444;
   padding: 10px 20px;

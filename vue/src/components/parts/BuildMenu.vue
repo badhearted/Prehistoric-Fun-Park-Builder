@@ -14,7 +14,7 @@
 </template>
 
 <script>
-import { mapMutations } from "vuex";
+import { mapActions } from "vuex";
 import BuildItem from "./BuildItem.vue";
 import StandartBuilding from "../buildItems/StandartBuilding.vue";
 import TowerBuilding from "../buildItems/TowerBuilding.vue";
@@ -54,7 +54,7 @@ export default {
   },
 
   methods: {
-    ...mapMutations("selection", ["setSelectedItem", "clearSelection"]),
+    ...mapActions("selection", ["setSelectedItem", "clearSelection"]),
     selectItem(item) {
       this.setSelectedItem(item);
     },
@@ -65,7 +65,7 @@ export default {
 };
 </script>
 
-<style scoped>
+<style scoped lang="less">
 .menu-wrapper {
   z-index: -1;
   position: absolute;

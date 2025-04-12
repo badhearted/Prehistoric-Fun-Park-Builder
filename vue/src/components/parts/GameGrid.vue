@@ -3,16 +3,11 @@
     <GameCell
       v-for="(cell, index) in cells"
       :key="index"
-      :x="cell.x"
-      :y="cell.y"
-      :activeClass="cell.activeClass"
-      :children="cell.children"
-      :temp="cell.temp"
+      :cell="cell"
       @click="({ x, y }) => handleCellClick({ x, y })"
       @hover="({ x, y }) => handleCellHover({ x, y })"
       @leave="({ x, y }) => handleCellLeave({ x, y })"
       @delete="({ x, y }) => handleDelete({ x, y })"
-      :ref="`cell-${cell.x}-${cell.y}`"
     ></GameCell>
   </div>
 </template>
@@ -20,7 +15,7 @@
 <script>
 import GameCell from "./GameCell.vue";
 
-import { mapState, mapActions, mapMutations } from "vuex";
+import { mapState, mapActions } from "vuex";
 
 export default {
   name: "GameGrid",
@@ -55,9 +50,20 @@ export default {
       };
     },
   },
+  mounted() {
+    this.initializeGrid({ x: this.x, y: this.y });
+
+    let cellCount = 0;
+    for (let i = 0; i < this.x; i++) {
+      for (let j = 0; j < this.y; j++) {
+        this.cellMap.set(`${i}-${j}`, cellCount);
+        cellCount++;
+      }
+    }
+  },
   methods: {
-    ...mapActions("grid", ["initializeGrid"]),
-    ...mapMutations("grid", ["updateCells", "setBuilding"]),
+    ...mapActions("grid", ["initializeGrid", "updateCells", "setBuilding"]),
+
     findCellIndex(x, y) {
       return this.cellMap.get(`${x}-${y}`) ?? -1;
     },
@@ -82,12 +88,10 @@ export default {
 
         cellArr.forEach((item) => {
           if (item >= 0) {
-            // this.cells[item].activeClass = active;
             this.updateCells({ index: item, updates: { activeClass: active } });
           }
         });
         this.updateCells({ index: index, updates: { temp: this.selectedItem?.component ?? null } });
-        // this.cells[index].temp = this.selectedItem?.component ?? null;
       }
     },
     handleCellLeave({ x, y }) {
@@ -99,33 +103,29 @@ export default {
 
             if (localIndex >= 0) {
               this.updateCells({ index: localIndex, updates: { activeClass: null } });
-              //   this.cells[localIndex].activeClass = null;
             }
           }
         }
         this.updateCells({ index: index, updates: { temp: null } });
-        // this.cells[index].temp = null;
       }
     },
     handleCellClick({ x, y }) {
-      if (this.selectedItem != null && this.canBuildStatus) {
-        const index = this.findCellIndex(x, y);
-        this.updateCells({ index: index, updates: { children: this.selectedItem.component } });
-        // this.cells[index].children = this.selectedItem.component;
-        this.setBuilding({
-          key: `${x}-${y}`,
-          building: {
-            occupies: this.selectedItem.occupies,
-            index: index,
-          },
-        });
-
-        this.selectedArea.forEach((index) => {
-          this.updateCells({ index: index, updates: { isOccupied: true, activeClass: "active_red" } });
-          //   this.cells[index].isOccupied = true;
-          //   this.cells[index].activeClass = "active_red";
-        });
+      if (!(this.selectedItem != null && this.canBuildStatus)) {
+        return;
       }
+      const index = this.findCellIndex(x, y);
+      this.updateCells({ index: index, updates: { children: this.selectedItem.component } });
+      this.setBuilding({
+        key: `${x}-${y}`,
+        building: {
+          occupies: this.selectedItem.occupies,
+          index: index,
+        },
+      });
+
+      this.selectedArea.forEach((index) => {
+        this.updateCells({ index: index, updates: { isOccupied: true, activeClass: "active_red" } });
+      });
     },
     handleDelete({ x, y }) {
       const occupies = this.buildings.get(`${x}-${y}`).occupies;
@@ -139,18 +139,6 @@ export default {
         }
       }
     },
-  },
-
-  mounted() {
-    this.initializeGrid({ x: this.x, y: this.y });
-
-    let cellCount = 0;
-    for (let i = 0; i < this.x; i++) {
-      for (let j = 0; j < this.y; j++) {
-        this.cellMap.set(`${i}-${j}`, cellCount);
-        cellCount++;
-      }
-    }
   },
 };
 </script>

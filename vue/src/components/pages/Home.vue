@@ -22,35 +22,8 @@ export default {
     GameGrid,
     BuildMenu,
   },
-  data() {
-    return {
-      mouseX: 0,
-      mouseY: 0,
-    };
-  },
   computed: {
     ...mapState("selection", ["selectedItem"]),
-
-    dragStyle() {
-      return {
-        left: this.mouseX - 15 + "px",
-        top: this.mouseY - 15 + "px",
-        position: "absolute",
-        pointerEvents: "none",
-      };
-    },
-  },
-  methods: {
-    updatePosition(event) {
-      this.mouseX = event.clientX;
-      this.mouseY = event.clientY;
-    },
-  },
-  mounted() {
-    document.addEventListener("mousemove", this.updatePosition);
-  },
-  beforeDestroy() {
-    document.removeEventListener("mousemove", this.updatePosition);
   },
 };
 </script>

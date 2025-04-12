@@ -1,26 +1,25 @@
 export default {
-  namespaced: true, // Включаем namespaces для модуля
-  state: {
-    selectedItem: null, // Состояние для хранения выбранного объекта
-  },
+  namespaced: true,
+  state: () => ({
+    selectedItem: null,
+  }),
   getters: {
-    selectedItem: (state) => state.selectedItem, // Геттер для получения выбранного объекта
+    selectedItem: (state) => state.selectedItem,
   },
   mutations: {
-    setSelectedItem(state, item) {
-      console.log("setItem");
-      state.selectedItem = item; // Мутация для установки выбранного объекта
+    SET_SELECTED_ITEM: (state, item) => {
+      state.selectedItem = item;
     },
-    clearSelection(state) {
-      state.selectedItem = null; // Мутация для очистки выбранного объекта
+    CLEAR_SELECTION: (state) => {
+      state.selectedItem = null;
     },
   },
   actions: {
-    selectItemAction({ commit }, item) {
-      commit("setSelectedItem", item); // Действие для установки выбранного объекта
+    setSelectedItem: ({ commit }, item) => {
+      commit("SET_SELECTED_ITEM", item);
     },
-    clearSelectionAction({ commit }) {
-      commit("clearSelection"); // Действие для очистки выбора
+    clearSelection: ({ commit }) => {
+      commit("CLEAR_SELECTION");
     },
   },
 };

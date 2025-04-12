@@ -1,7 +1,7 @@
 <template>
   <div
     class="cell"
-    :class="[activeClass]"
+    :class="[cell.activeClass]"
     @click="() => onCellClick()"
     @mouseleave="() => handleLeave()"
     @mouseover="() => handleHover()"
@@ -9,11 +9,11 @@
     <div @click="() => onBuildingClick()">
       <component
         :style="{ position: 'absolute', pointerEvents: selectedItem == null ? 'auto' : 'none' }"
-        :is="children"
+        :is="cell.children"
       />
     </div>
 
-    <component :style="{ opacity: '0.5', pointerEvents: 'none' }" :is="temp" />
+    <component :style="{ opacity: '0.5', pointerEvents: 'none' }" :is="cell.temp" />
   </div>
 </template>
 
@@ -22,37 +22,32 @@ import { mapState } from "vuex";
 
 export default {
   props: {
-    x: Number,
-    y: Number,
-    activeClass: String,
-    children: Object,
-    temp: Object,
-    isMounted: Boolean,
+    cell: Object,
   },
   computed: {
     ...mapState("selection", ["selectedItem"]),
   },
   methods: {
     onCellClick() {
-      this.$emit("click", { x: this.x, y: this.y });
+      this.$emit("click", { x: this.cell.x, y: this.cell.y });
     },
     handleHover() {
-      this.$emit("hover", { x: this.x, y: this.y });
+      this.$emit("hover", { x: this.cell.x, y: this.cell.y });
     },
     handleLeave() {
-      this.$emit("leave", { x: this.x, y: this.y });
+      this.$emit("leave", { x: this.cell.x, y: this.cell.y });
     },
 
     onBuildingClick() {
       if (this.selectedItem == null) {
-        this.$emit("delete", { x: this.x, y: this.y });
+        this.$emit("delete", { x: this.cell.x, y: this.cell.y });
       }
     },
   },
 };
 </script>
 
-<style scoped>
+<style scoped lang="less">
 .cell {
   position: relative;
   border: 1px solid;
