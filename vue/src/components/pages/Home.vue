@@ -1,24 +1,31 @@
 <template>
   <PageLayout>
-    <section class="p-16">
-      Homepage
-      <button @click="() => openHelpModal()">Open modal</button>
+    <section>
+      <GameGrid :x="20" :y="20" />
     </section>
+    <BuildMenu />
   </PageLayout>
 </template>
 
 <script>
-import PageLayout from '../parts/PageLayout'
-import { helpModal } from "@/mixins/modals";
+import PageLayout from "../parts/PageLayout";
+import GameGrid from "../parts/GameGrid.vue";
+import BuildMenu from "../parts/BuildMenu.vue";
+
+import { mapState } from "vuex";
 
 export default {
-  name: 'HomePage',
-  mixins: [helpModal],
+  name: "HomePage",
+
   components: {
-    PageLayout
-  }
-}
+    PageLayout,
+    GameGrid,
+    BuildMenu,
+  },
+  computed: {
+    ...mapState("selection", ["selectedItem"]),
+  },
+};
 </script>
 
-<style>
-</style>
+<style></style>
