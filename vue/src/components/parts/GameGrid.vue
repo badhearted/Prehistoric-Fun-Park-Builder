@@ -148,6 +148,6 @@ export default {
   z-index: 1;
   transform: rotateX(45deg) rotateZ(45deg);
   transform-origin: center;
-  background: url("../../assets/cat.png") left / 100% 100% no-repeat;
+  background: url("../../assets/grass.jpg") left / 100% 100% no-repeat;
 }
 </style>

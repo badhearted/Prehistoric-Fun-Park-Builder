@@ -16,9 +16,9 @@
 <script>
 import { mapActions } from "vuex";
 import BuildItem from "./BuildItem.vue";
-import StandartBuilding from "../buildItems/StandartBuilding.vue";
-import TowerBuilding from "../buildItems/TowerBuilding.vue";
-import DeliciousAndDotBuilding from "../buildItems/DeliciousAndDotBuilding.vue";
+import ServerBuilding from "../buildItems/ServerBuilding.vue";
+import TownHall from "../buildItems/TownHall.vue";
+import BigHouse from "../buildItems/BigHouse.vue";
 
 export default {
   components: { BuildItem },
@@ -27,7 +27,7 @@ export default {
       items: [
         {
           id: 1,
-          component: StandartBuilding,
+          component: ServerBuilding,
           occupies: [
             { x: 0, y: 0 },
             { x: 0, y: 0 },
@@ -35,17 +35,17 @@ export default {
         },
         {
           id: 2,
-          component: TowerBuilding,
+          component: TownHall,
           occupies: [
             { x: -1, y: -1 },
-            { x: 1, y: 1 },
+            { x: 0, y: 0 },
           ],
         },
         {
           id: 3,
-          component: DeliciousAndDotBuilding,
+          component: BigHouse,
           occupies: [
-            { x: -2, y: -2 },
+            { x: -1, y: -1 },
             { x: 2, y: 1 },
           ],
         },
