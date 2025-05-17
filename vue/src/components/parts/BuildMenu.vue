@@ -19,6 +19,7 @@ import BuildItem from "./BuildItem.vue";
 import ServerBuilding from "../buildItems/ServerBuilding.vue";
 import TownHall from "../buildItems/TownHall.vue";
 import BigHouse from "../buildItems/BigHouse.vue";
+import RoadGray from "../buildItems/RoadGray.vue";
 
 export default {
   components: { BuildItem },
@@ -47,6 +48,14 @@ export default {
           occupies: [
             { x: -1, y: -1 },
             { x: 2, y: 1 },
+          ],
+        },
+        {
+          id: 0,
+          component: RoadGray,
+          occupies: [
+            { x: 0, y: 0 },
+            { x: 0, y: 0 },
           ],
         },
       ],

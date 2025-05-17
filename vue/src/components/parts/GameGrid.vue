@@ -16,6 +16,7 @@
 import GameCell from "./GameCell.vue";
 
 import { mapState, mapActions } from "vuex";
+import GateBuilding from "../buildItems/GateBuilding.vue";
 
 export default {
   name: "GameGrid",
@@ -37,7 +38,13 @@ export default {
       cellMap: new Map(),
       canBuildStatus: true,
       selectedArea: [],
+      HouseCounter: 0,
     };
+  },
+  watch: {
+    counter(newVal, oldVal) {
+      this.onCounterChange(newVal, oldVal);
+    },
   },
   computed: {
     ...mapState("selection", ["selectedItem"]),
@@ -60,6 +67,19 @@ export default {
         cellCount++;
       }
     }
+    let GridWidth = Math.sqrt(this.cells.length);
+    let index = this.cells.length - GridWidth / 2;
+    this.updateCells({ index: index, updates: { children: GateBuilding, id: -1, isOccupied: true } });
+    this.setBuilding({
+      key: `${GridWidth - 1}-${GridWidth / 2}`,
+      building: {
+        occupies: [
+          { x: 0, y: 0 },
+          { x: 0, y: 0 },
+        ],
+        index: index,
+      },
+    });
   },
   methods: {
     ...mapActions("grid", ["initializeGrid", "updateCells", "setBuilding"]),
@@ -74,10 +94,12 @@ export default {
         const index = this.findCellIndex(x, y);
         const cellArr = [];
         let active = "active_blue";
+
         for (let i = x + this.selectedItem.occupies[0].x; i <= x + this.selectedItem.occupies[1].x; i++) {
           for (let j = y + this.selectedItem.occupies[0].y; j <= y + this.selectedItem.occupies[1].y; j++) {
             const localIndex = this.findCellIndex(i, j);
             cellArr.push(localIndex);
+
             if (localIndex === -1 || this.cells[localIndex].isOccupied) {
               active = "active_red";
               this.canBuildStatus = false;
@@ -114,7 +136,7 @@ export default {
         return;
       }
       const index = this.findCellIndex(x, y);
-      this.updateCells({ index: index, updates: { children: this.selectedItem.component } });
+      this.updateCells({ index: index, updates: { children: this.selectedItem.component, id: this.selectedItem.id } });
       this.setBuilding({
         key: `${x}-${y}`,
         building: {
@@ -122,7 +144,7 @@ export default {
           index: index,
         },
       });
-
+      this.counter++;
       this.selectedArea.forEach((index) => {
         this.updateCells({ index: index, updates: { isOccupied: true, activeClass: "active_red" } });
       });
@@ -130,7 +152,11 @@ export default {
     handleDelete({ x, y }) {
       const occupies = this.buildings.get(`${x}-${y}`).occupies;
       const index = this.findCellIndex(x, y);
-      this.updateCells({ index: index, updates: { isOccupied: false, children: null } });
+      if (this.cells[index].id === -1) {
+        return;
+      }
+      this.counter--;
+      this.updateCells({ index: index, updates: { isOccupied: false, children: null, id: null } });
       for (let i = x + occupies[0].x; i <= x + occupies[1].x; i++) {
         for (let j = y + occupies[0].y; j <= y + occupies[1].y; j++) {
           const localIndex = this.findCellIndex(i, j);
