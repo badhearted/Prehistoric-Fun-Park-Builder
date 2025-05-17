@@ -9,12 +9,20 @@
       @leave="({ x, y }) => handleCellLeave({ x, y })"
       @delete="({ x, y }) => handleDelete({ x, y })"
     ></GameCell>
+    <PersonComponent
+      v-for="person in people"
+      :key="person.id"
+      :x="person.x"
+      :y="person.y"
+      :style="{ opacity: person.state === 'waiting' ? 0 : 1 }"
+    />
   </div>
 </template>
 
 <script>
 import GameCell from "./GameCell.vue";
-
+import { generatePersonId } from "@/utils/idGenerator";
+import PersonComponent from "./PersonComponent.vue";
 import { mapState, mapActions } from "vuex";
 import GateBuilding from "../buildItems/GateBuilding.vue";
 
@@ -22,6 +30,7 @@ export default {
   name: "GameGrid",
   components: {
     GameCell,
+    PersonComponent,
   },
   props: {
     x: {
@@ -39,11 +48,14 @@ export default {
       canBuildStatus: true,
       selectedArea: [],
       HouseCounter: 0,
+      gateX: 0,
+      gateY: 0,
+      people: [],
     };
   },
   watch: {
-    counter(newVal, oldVal) {
-      this.onCounterChange(newVal, oldVal);
+    HouseCounter(newVal) {
+      this.syncPeopleWithHouses(newVal);
     },
   },
   computed: {
@@ -69,9 +81,11 @@ export default {
     }
     let GridWidth = Math.sqrt(this.cells.length);
     let index = this.cells.length - GridWidth / 2;
+    this.gateX = GridWidth - 1;
+    this.gateY = GridWidth / 2;
     this.updateCells({ index: index, updates: { children: GateBuilding, id: -1, isOccupied: true } });
     this.setBuilding({
-      key: `${GridWidth - 1}-${GridWidth / 2}`,
+      key: `${this.gateX}-${this.gateY}`,
       building: {
         occupies: [
           { x: 0, y: 0 },
@@ -80,9 +94,10 @@ export default {
         index: index,
       },
     });
+    this.tickInterval = setInterval(this.updatePeople, 1000); // 1 раз в секунду
   },
   methods: {
-    ...mapActions("grid", ["initializeGrid", "updateCells", "setBuilding"]),
+    ...mapActions("grid", ["initializeGrid", "updateCells", "setBuilding", "deleteBuilding"]),
 
     findCellIndex(x, y) {
       return this.cellMap.get(`${x}-${y}`) ?? -1;
@@ -144,7 +159,8 @@ export default {
           index: index,
         },
       });
-      this.counter++;
+      this.HouseCounter++;
+      this.canBuildStatus = false;
       this.selectedArea.forEach((index) => {
         this.updateCells({ index: index, updates: { isOccupied: true, activeClass: "active_red" } });
       });
@@ -155,7 +171,8 @@ export default {
       if (this.cells[index].id === -1) {
         return;
       }
-      this.counter--;
+      this.deleteBuilding({ x, y });
+      this.HouseCounter--;
       this.updateCells({ index: index, updates: { isOccupied: false, children: null, id: null } });
       for (let i = x + occupies[0].x; i <= x + occupies[1].x; i++) {
         for (let j = y + occupies[0].y; j <= y + occupies[1].y; j++) {
@@ -164,6 +181,83 @@ export default {
           //   this.cells[localIndex].activeClass = null;
         }
       }
+    },
+    randomBetween(min, max) {
+      return Math.floor(Math.random() * (max - min + 1)) + min;
+    },
+    syncPeopleWithHouses(houseCount) {
+      const maxPeople = houseCount;
+      console.log(maxPeople);
+      const currentCount = this.people.length;
+
+      if (currentCount < maxPeople) {
+        // Добавляем новых людей
+        for (let i = currentCount; i < maxPeople; i++) {
+          this.people.push({
+            id: generatePersonId(),
+            x: this.gateX, // начальные координаты
+            y: this.gateY,
+            state: "waiting",
+            spawnTimer: this.randomBetween(1, 10),
+          });
+        }
+      } else if (currentCount > maxPeople) {
+        // Удаляем лишних
+        this.people.splice(maxPeople);
+      }
+    },
+
+    updatePeople() {
+      this.people.forEach((person) => {
+        if (person.state === "walking") {
+          const newCords = this.getRandomNearbyRoad(person.x, person.y);
+
+          if (newCords) {
+            person.x = newCords.x;
+            person.y = newCords.y;
+          }
+        }
+
+        if (person.state === "waiting") {
+          person.spawnTimer--;
+          if (person.spawnTimer === 0) {
+            const newCords = this.getRandomNearbyRoad(person.x, person.y);
+            if (newCords) {
+              person.state = "walking";
+              person.x = newCords.x;
+              person.y = newCords.y;
+            }
+          }
+        }
+      });
+    },
+
+    getRandomNearbyRoad(x, y) {
+      const directions = [
+        { dx: -1, dy: 0 }, // слева
+        { dx: 1, dy: 0 }, // справа
+        { dx: 0, dy: -1 }, // сверху
+        { dx: 0, dy: 1 }, // снизу
+      ];
+
+      const nearbyRoads = directions
+        .map(({ dx, dy }) => {
+          const nx = x + dx;
+          const ny = y + dy;
+          const index = this.findCellIndex(nx, ny);
+          if (index >= 0 && this.cells[index]?.id === 0) {
+            return { x: nx, y: ny };
+          }
+          return null;
+        })
+        .filter(Boolean);
+
+      if (nearbyRoads.length === 0) {
+        return null;
+      }
+
+      const randomIndex = Math.floor(Math.random() * nearbyRoads.length);
+      return nearbyRoads[randomIndex];
     },
   },
 };
