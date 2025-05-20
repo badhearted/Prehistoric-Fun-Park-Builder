@@ -10,6 +10,7 @@
       <component
         :style="{ position: 'absolute', pointerEvents: selectedItem == null ? 'auto' : 'none' }"
         :is="cell.children"
+        :counter="cell.counter"
       />
     </div>
 
@@ -59,6 +60,9 @@ export default {
   }
   &.active_red {
     background-color: rgba(172, 52, 52, 0.5);
+  }
+  &.active_green {
+    background-color: rgba(66, 172, 52, 0.5);
   }
 }
 </style>
