@@ -18,14 +18,14 @@
     />
   </div>
 </template>
- 
+
 <script>
 import GameCell from "./GameCell.vue";
 import { generatePersonId } from "@/utils/idGenerator";
 import PersonComponent from "./PersonComponent.vue";
 import { mapState, mapActions } from "vuex";
 import GateBuilding from "../buildItems/GateBuilding.vue";
- 
+
 export default {
   name: "GameGrid",
   components: {
@@ -71,7 +71,7 @@ export default {
   },
   mounted() {
     this.initializeGrid({ x: this.x, y: this.y });
- 
+
     let cellCount = 0;
     for (let i = 0; i < this.x; i++) {
       for (let j = 0; j < this.y; j++) {
@@ -105,23 +105,23 @@ export default {
       "incrementCounter",
       "decrementCounter",
     ]),
- 
+
     findCellIndex(x, y) {
       return this.cellMap.get(`${x}-${y}`) ?? -1;
     },
     handleCellHover({ x, y }) {
       this.canBuildStatus = true;
- 
+
       if (this.selectedItem) {
         const index = this.findCellIndex(x, y);
         const cellArr = [];
         let active = "active_blue";
- 
+
         for (let i = x + this.selectedItem.occupies[0].x; i <= x + this.selectedItem.occupies[1].x; i++) {
           for (let j = y + this.selectedItem.occupies[0].y; j <= y + this.selectedItem.occupies[1].y; j++) {
             const localIndex = this.findCellIndex(i, j);
             cellArr.push(localIndex);
- 
+
             if (localIndex === -1 || this.cells[localIndex].isOccupied) {
               active = "active_red";
               this.canBuildStatus = false;
@@ -129,7 +129,7 @@ export default {
           }
         }
         this.selectedArea = [...cellArr];
- 
+
         cellArr.forEach((item) => {
           if (item >= 0) {
             this.updateCells({ index: item, updates: { activeClass: active } });
@@ -144,7 +144,7 @@ export default {
         for (let i = x + this.selectedItem.occupies[0].x; i <= x + this.selectedItem.occupies[1].x; i++) {
           for (let j = y + this.selectedItem.occupies[0].y; j <= y + this.selectedItem.occupies[1].y; j++) {
             const localIndex = this.findCellIndex(i, j);
- 
+
             if (localIndex >= 0) {
               this.updateCells({ index: localIndex, updates: { activeClass: null } });
             }
@@ -157,7 +157,7 @@ export default {
       if (!(this.selectedItem != null && this.canBuildStatus)) {
         return;
       }
- 
+
       const index = this.findCellIndex(x, y);
       this.updateCells({
         index: index,
@@ -172,7 +172,7 @@ export default {
       });
       this.HouseCounter++;
       this.canBuildStatus = false;
- 
+
       this.selectedArea.forEach((index) => {
         this.updateCells({ index: index, updates: { isOccupied: true, activeClass: "active_red" } });
       });
@@ -209,7 +209,7 @@ export default {
       const maxPeople = houseCount;
       console.log(maxPeople);
       const currentCount = this.people.length;
- 
+
       if (currentCount < maxPeople) {
         // Добавляем новых людей
         for (let i = currentCount; i < maxPeople; i++) {
@@ -226,42 +226,46 @@ export default {
         this.people.splice(maxPeople);
       }
     },
- 
+
     updatePeople() {
       this.people.forEach((person) => {
         if (person.state === "walking") {
           const newCords = this.getRandomNearbyRoad(person.x, person.y);
           const newIndex = this.findCellIndex(newCords.x, newCords.y);
+          const buildIndex = this.findCellIndex(this.cells[newIndex].buildCordsX, this.cells[newIndex].buildCordsY);
           if (newCords) {
             person.x = newCords.x;
             person.y = newCords.y;
- 
+
             if (this.cells[newIndex].type === 2) {
               person.state = "waiting";
               person.spawnTimer = this.randomBetween(5, 15);
-              this.incrementCounter(newIndex);
+              this.incrementCounter(buildIndex);
             }
           }
         }
- 
+
         if (person.state === "waiting") {
           person.spawnTimer--;
           if (person.spawnTimer <= 0) {
             const newCords = this.getRandomNearbyRoad(person.x, person.y);
             const prevIndex = this.findCellIndex(person.x, person.y);
- 
+            const buildIndex = this.findCellIndex(this.cells[prevIndex].buildCordsX, this.cells[prevIndex].buildCordsY);
+
             if (newCords) {
               person.state = "walking";
               person.x = newCords.x;
               person.y = newCords.y;
               console.log(prevIndex);
-              this.decrementCounter(prevIndex);
+              if (this.cells[prevIndex].type != -1) {
+                this.decrementCounter(buildIndex);
+              }
             }
           }
         }
       });
     },
- 
+
     getRandomNearbyRoad(x, y) {
       const directions = [
         { dx: -1, dy: 0 }, // слева
@@ -269,7 +273,7 @@ export default {
         { dx: 0, dy: -1 }, // сверху
         { dx: 0, dy: 1 }, // снизу
       ];
- 
+
       const nearbyRoads = directions
         .map(({ dx, dy }) => {
           const nx = x + dx;
@@ -281,18 +285,18 @@ export default {
           return null;
         })
         .filter(Boolean);
- 
+
       if (nearbyRoads.length === 0) {
         return null;
       }
- 
+
       const randomIndex = Math.floor(Math.random() * nearbyRoads.length);
       return nearbyRoads[randomIndex];
     },
   },
 };
 </script>
- 
+
 <style lang="less">
 .grid {
   z-index: 1;
@@ -301,4 +305,3 @@ export default {
   background: url("../../assets/grass.jpg") left / 100% 100% no-repeat;
 }
 </style>
- 
